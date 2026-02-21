@@ -53,6 +53,15 @@ export default function CompetitionsPage() {
       available: true,
       comingSoon: false,
     },
+      {
+        id: "letter-hive",
+        title: "خلية الحروف",
+        description: "لعبة تنافسية بين فريقين، يقوم كل فريق بمحاولة توصيل لونه من الجهتين لتحقيق الفوز",
+        icon: Grid3x3,
+        color: "from-green-500 to-green-600",
+        available: true,
+        comingSoon: false,
+      },
   ]
 
   if (!isLoggedIn) {
@@ -79,7 +88,11 @@ export default function CompetitionsPage() {
               }`}
               onClick={() => {
                 if (game.available) {
-                  router.push(`/competitions/${game.id}`)
+                  if (game.id === "letter-hive") {
+                    router.push(`/competitions/letter-hive/teams`)
+                  } else {
+                    router.push(`/competitions/${game.id}`)
+                  }
                 }
               }}
             >

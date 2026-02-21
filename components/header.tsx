@@ -240,7 +240,10 @@ export function Header() {
             <nav className="flex flex-col p-4">
               <button onClick={() => handleNav("/")} className="text-right py-4 border-b flex items-center justify-between">الرئيسية <Target size={18}/></button>
               <button onClick={() => handleNav("/achievements")} className="text-right py-4 border-b flex items-center justify-between">الإنجازات <Trophy size={18}/></button>
-              
+              {/* زر المسابقات للجوال */}
+              {isLoggedIn && (userRole === "teacher" || userRole === "admin") && (
+                <button onClick={() => handleNav("/competitions")} className="text-right py-4 border-b flex items-center justify-between">المسابقات <Trophy size={18}/></button>
+              )}
               {isLoggedIn && userRole === "student" && (
                 <>
                   <button onClick={() => handleNav("/pathways")} className="text-right py-4 border-b flex items-center justify-between">المسار <Map size={18}/></button>
@@ -248,9 +251,7 @@ export function Header() {
                   <button onClick={() => handleNav("/store")} className="text-right py-4 border-b flex items-center justify-between">المتجر <Store size={18}/></button>
                 </>
               )}
-              
               <button onClick={() => handleNav("/contact")} className="text-right py-4 border-b flex items-center justify-between">تواصل معنا <MessageSquare size={18}/></button>
-              
               <div className="py-4">
                 <p className="text-gray-400 text-xs mb-3 font-bold uppercase">الحلقات</p>
                 <div className="grid grid-cols-2 gap-2">

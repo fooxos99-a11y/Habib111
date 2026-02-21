@@ -418,15 +418,13 @@ export default function AllStudentsPage() {
     )
   }
 
-  // ترتيب الطلاب حسب النقاط بشكل تنازلي وأخذ أفضل 10 فقط
-  const topStudents = [...allStudents].sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 10)
-  if (topStudents.length === 0) {
+  if (allStudents.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1a2332] mb-4">أفضل 10 طلاب</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1a2332] mb-4">جميع الطلاب</h1>
             <p className="text-xl text-gray-600">لا يوجد طلاب مسجلين حالياً</p>
           </div>
         </main>
@@ -454,7 +452,7 @@ export default function AllStudentsPage() {
             <div className="relative inline-block">
               <div className="absolute inset-0 bg-[#d8a355]/5 blur-3xl rounded-full" />
               <h1 className="relative text-3xl md:text-5xl lg:text-6xl font-bold text-[#00312e] px-4 md:px-6 py-2 leading-tight">
-                أفضل 10 طلاب
+                جميع الطلاب
               </h1>
             </div>
 
@@ -468,14 +466,14 @@ export default function AllStudentsPage() {
             </div>
 
             <p className="text-base md:text-lg text-gray-600 mt-4 md:mt-6 font-medium px-4">
-              قائمة أفضل 10 طلاب في جميع الحلقات
+              قائمة شاملة بجميع طلاب الحلقات
             </p>
           </div>
 
           <TooltipProvider>
             <div className="max-w-5xl mx-auto">
               <div className="grid grid-cols-1 gap-2 md:gap-3">
-                {topStudents.map((student, index) => {
+                {allStudents.map((student, index) => {
                   const themeColors = getThemeColors(student.preferred_theme)
                   const cardEffect = applyCardEffect(
                     student.active_effect,

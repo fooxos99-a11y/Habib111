@@ -90,6 +90,30 @@ export function ColorDifferenceChallenge({ onSuccess, onFailure, timeLimit = 60 
     }
   }
 
+  // دالة مساعدة لاستخراج قيم اللون وإنشاء تدرجات ثلاثية الأبعاد
+  const get3DStyles = (colorStr: string) => {
+    // استخراج الأرقام من نص hsl
+    const match = colorStr.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+    if (!match) return { background: colorStr, shadow: 'none' };
+
+    const h = parseInt(match[1]);
+    const s = parseInt(match[2]);
+    const l = parseInt(match[3]);
+
+    // حساب درجات الألوان للإضاءة والظل
+    const lightColor = `hsl(${h}, ${s}%, ${Math.min(l + 15, 100)}%)`; // إضاءة من الأعلى
+    const mainColor = `hsl(${h}, ${s}%, ${l}%)`;
+    const darkColor = `hsl(${h}, ${s}%, ${Math.max(l - 15, 0)}%)`; // ظل في الأسفل
+    const deepShadow = `hsl(${h}, ${s}%, ${Math.max(l - 30, 0)}%)`; // لون السُمك (الجانب)
+
+    return {
+      // تدرج لوني يعطي إيحاء بالانتفاخ
+      background: `linear-gradient(135deg, ${lightColor} 0%, ${mainColor} 50%, ${darkColor} 100%)`,
+      // لون الظل الجانبي الصلب
+      shadowColor: deepShadow
+    };
+  }
+
   const renderShape = (index: number) => {
     const isCorrect = index === differentIndex
     const color = isCorrect ? differentColor : baseColor
@@ -104,28 +128,51 @@ export function ColorDifferenceChallenge({ onSuccess, onFailure, timeLimit = 60 
       hexagon: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
     }
 
-    const shapeClass = shape === "circle" ? "rounded-full" : "rounded-lg"
+    const shapeClass = shape === "circle" ? "rounded-full" : shape === "square" ? "rounded-xl" : "rounded-none"
+    
+    // الحصول على ألوان الـ 3D
+    const { background, shadowColor } = get3DStyles(color);
 
     return (
-      <button
-        key={index}
-        onClick={() => handleShapeClick(index)}
-        disabled={!timerActive}
-        className={`w-full aspect-square transition-all duration-200 ${shapeClass} ${
-          timerActive ? "hover:scale-105 cursor-pointer active:scale-95" : "cursor-not-allowed"
-        }`}
-        style={{
-          backgroundColor: color,
-          clipPath: clipPaths[shape],
-        }}
-      />
+      <div 
+        key={index} 
+        className="relative group w-full h-full flex items-center justify-center"
+      >
+        <button
+          onClick={() => handleShapeClick(index)}
+          disabled={!timerActive}
+          className={`w-full aspect-square transition-all duration-150 ${shapeClass} ${
+            timerActive ? "cursor-pointer active:translate-y-[6px]" : "cursor-not-allowed opacity-80"
+          }`}
+          style={{
+            background: background,
+            clipPath: clipPaths[shape],
+            // هنا السحر: نستخدم drop-shadow لإنشاء ظل يتبع شكل القص
+            // الظل الأول: لون داكن صلب لعمل سمك للشكل
+            // الظل الثاني: ظل ناعم أسود للواقعية
+            filter: timerActive 
+              ? `drop-shadow(0px 6px 0px ${shadowColor}) drop-shadow(0px 10px 10px rgba(0,0,0,0.3))` 
+              : `drop-shadow(0px 2px 0px ${shadowColor}) drop-shadow(0px 4px 4px rgba(0,0,0,0.2))`,
+            // إزالة الظل الصلب عند الضغط لمحاكاة الحركة
+            transform: "translateZ(0)", // تحسين الأداء
+          }}
+        >
+          {/* لمعة إضافية خفيفة في الأعلى */}
+          <div 
+             className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none"
+             style={{ 
+               background: 'radial-gradient(circle at 30% 30%, white 0%, transparent 60%)' 
+             }}
+          />
+        </button>
+      </div>
     )
   }
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-8">
       <div className="absolute top-4 right-4">
-        <div className="flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full">
+        <div className="flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-lg border border-white/50">
           <Clock className="w-5 h-5 text-[#D4AF37]" />
           <span className={`text-2xl font-bold ${timeLeft <= 10 ? "text-red-500 animate-pulse" : "text-[#1a2332]"}`}>
             {timeLeft}s
@@ -135,7 +182,7 @@ export function ColorDifferenceChallenge({ onSuccess, onFailure, timeLimit = 60 
 
       <div className="w-full text-center mt-2 mb-4 flex flex-col items-center" style={{position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2}}>
         <h2
-          className="font-bold text-[#1a2332] whitespace-nowrap overflow-hidden text-ellipsis mx-auto order-1"
+          className="font-bold text-[#1a2332] whitespace-nowrap overflow-hidden text-ellipsis mx-auto order-1 drop-shadow-sm"
           style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', maxWidth: '95vw' }}
         >
           ابحث عن اللون المختلف
@@ -144,11 +191,11 @@ export function ColorDifferenceChallenge({ onSuccess, onFailure, timeLimit = 60 
           {Array.from({ length: totalRounds }).map((_, index) => (
             <div
               key={index}
-              className={`w-4 h-4 rounded-full transition-all ${
+              className={`w-4 h-4 rounded-full transition-all shadow-inner ${
                 index < currentRound - 1
-                  ? "bg-green-500"
+                  ? "bg-green-500 shadow-green-700"
                   : index === currentRound - 1
-                    ? "bg-[#d8a355] scale-125"
+                    ? "bg-[#d8a355] scale-125 shadow-[#a67c3e]"
                     : "bg-gray-300"
               }`}
             />
